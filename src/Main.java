@@ -1,13 +1,16 @@
 public class Main {
     public static void main(String args[]) {
         if (args.length != 0) {
-            int group = 32;
+            int group = 4;
             Encode encode = new Encode(args[0], group);
 
             //summary
             int dataLength = encode.getData().length;
             int totalEncodedLength = encode.getDictionary().length + encode.getEncoded().length;
             int average = ((dataLength - totalEncodedLength) / totalEncodedLength) * 100;
+            System.out.println("Group: " + group);
+            System.out.println("Bites for File:" + encode.getBites4file());
+            System.out.println();
             System.out.println("data: " + dataLength + " bytes");
             System.out.println("encoded: " + totalEncodedLength + " bytes");
             System.out.println("Compression average: " + average + "%");
