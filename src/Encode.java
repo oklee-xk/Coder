@@ -9,7 +9,7 @@ import java.util.*;
  */
 class Encode {
     private File file;
-    private int bites4file = 8;
+    private int bites4file;
     private int groups = 2;
     private byte[] data;
     private byte[] encoded;
@@ -33,7 +33,7 @@ class Encode {
     byte[] getDictionary() {
         return dictionary;
     }
-    int getBites4file() { return bites4file; };
+    int getBites4file() { return bites4file; }
 
     private void init(byte[] data) {
         HashMap<String, Integer> review = new HashMap<>();
@@ -90,8 +90,15 @@ class Encode {
 
         //completing the rest of the data
         if (!"".equals(byteStr)) {
-            byteStr = String.format("%-8s", byteStr).replace(' ', '0');
+            String invertedByteStr = byteStr.substring(byteStr.length() - 1, byteStr.length());
+            char invertedByte = "0".equals(invertedByteStr) ? '1' : '0';
+            byteStr = String.format("%-8s", byteStr).replace(' ', invertedByte);
             result.add(Utils.string2Byte(byteStr));
+        } else {
+            byteStr = Utils.byte2String(result.get(result.size() - 1), false);
+            String invertedByteStr = byteStr.substring(byteStr.length() - 1, byteStr.length());
+            byte roundedByte = (byte) ("0".equals(invertedByteStr) ? 255 : 0);
+            result.add(roundedByte);
         }
 
         return result;

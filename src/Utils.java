@@ -41,6 +41,10 @@ class Utils {
         return (byte) casted;
     }
 
+    static int string2Int(String byteStr) {
+        return Integer.parseInt(byteStr, 2);
+    }
+
     static void printHashMap(HashMap<String, Byte> hashMap) {
         for (String key: hashMap.keySet()){
             String value = hashMap.get(key).toString();

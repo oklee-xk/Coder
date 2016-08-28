@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.jar.Pack200;
 
 /**
  * Created by oscar on 25/08/2016.
@@ -14,7 +13,7 @@ import java.util.jar.Pack200;
 class Decode {
     private byte[] decoded;
     private int groups, bites4file;
-    private HashMap<String, Byte> dictionary;
+    private HashMap<String, Integer> dictionary;
 
     Decode(byte[] data, byte[] dictionary, int groups, int bites4file) {
         this.groups = groups;
@@ -40,19 +39,26 @@ class Decode {
 
     private byte[] getDecodedFile(byte[] data) {
         List<Byte> encoded = new ArrayList<>();
-        HashMap<Byte, String> reverseDictionary = Utils.swapMap(dictionary);
+        HashMap<Integer, String> reverseDictionary = Utils.swapMap(dictionary);
         String keyStr = "";
 
         int currentBits = bites4file;
-        for (byte b: data) {
+        for (int j = 0; j < data.length; j++) {
+            byte b = data[j];
             String byteStr = Utils.byte2String(b, true);
             int beginIndex = 0;
+
+            if (j == data.length - 1) {
+                //remove garbage bits.
+                String lastBit = byteStr.substring(byteStr.length() - 1);
+                byteStr = byteStr.replaceFirst(lastBit + "*$", "");
+            }
 
             while (beginIndex + currentBits <= byteStr.length()) {
                 keyStr += byteStr.substring(beginIndex, beginIndex += currentBits);
 
                 //group of bits gotten
-                byte key = Utils.string2Byte(keyStr);
+                int key = Utils.string2Int(keyStr);
                 String bytes = reverseDictionary.get(key);
                 for (int i = 0; i < groups; i++) {
                     if (bytes.length() >= i * 8 + 8) {
@@ -77,20 +83,19 @@ class Decode {
         return Utils.toPrimitives(encoded);
     }
 
-    private HashMap<String, Byte> getDictionaryStructure(byte[] dictionary) {
-        HashMap<String, Byte> dictionaryStructure = new HashMap<>();
+    private HashMap<String, Integer> getDictionaryStructure(byte[] dictionary) {
+        HashMap<String, Integer> dictionaryStructure = new HashMap<>();
         int counter = 0;
         for (int i = 0; i < dictionary.length; i++) {
-            Byte value = (byte) counter;
-            counter++;
             String key = "";
 
             for (int j = 0; j < groups; j++) {
                 if (i + j < dictionary.length) key += Utils.byte2String(dictionary[i + j], true);
             }
 
-            dictionaryStructure.put(key, value);
+            dictionaryStructure.put(key, counter);
             i += (groups - 1);
+            counter++;
         }
 
         return dictionaryStructure;
