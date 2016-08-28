@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.jar.Pack200;
 
 /**
  * Created by oscar on 25/08/2016.
@@ -12,11 +13,12 @@ import java.util.List;
  */
 class Decode {
     private byte[] decoded;
-    private int groups;
+    private int groups, bites4file;
     private HashMap<String, Byte> dictionary;
 
-    Decode(byte[] data, byte[] dictionary, int groups) {
+    Decode(byte[] data, byte[] dictionary, int groups, int bites4file) {
         this.groups = groups;
+        this.bites4file = bites4file;
         this.dictionary = getDictionaryStructure(dictionary);
         this.decoded = getDecodedFile(data);
     }
@@ -39,16 +41,38 @@ class Decode {
     private byte[] getDecodedFile(byte[] data) {
         List<Byte> encoded = new ArrayList<>();
         HashMap<Byte, String> reverseDictionary = Utils.swapMap(dictionary);
-        for (byte b: data) {
-            String bytes = reverseDictionary.get(b);
+        String keyStr = "";
 
-            for (int i = 0; i < groups; i++) {
-                if (bytes.length() >= i * 8 + 8) {
-                    String byteStr = bytes.substring(i * 8, i * 8 + 8);
-                    encoded.add(Utils.string2Byte(byteStr));
+        int currentBits = bites4file;
+        for (byte b: data) {
+            String byteStr = Utils.byte2String(b, true);
+            int beginIndex = 0;
+
+            while (beginIndex + currentBits <= byteStr.length()) {
+                keyStr += byteStr.substring(beginIndex, beginIndex += currentBits);
+
+                //group of bits gotten
+                byte key = Utils.string2Byte(keyStr);
+                String bytes = reverseDictionary.get(key);
+                for (int i = 0; i < groups; i++) {
+                    if (bytes.length() >= i * 8 + 8) {
+                        String fileDecodedByte = bytes.substring(i * 8, i * 8 + 8);
+                        encoded.add(Utils.string2Byte(fileDecodedByte));
+                    }
                 }
+
+                currentBits = bites4file;
+                keyStr = "";
             }
+
+            keyStr += byteStr.substring(beginIndex, byteStr.length());
+            currentBits = bites4file - keyStr.length();
         }
+
+//        if (!"".equals(keyStr)) {
+//            //rest of bits in the last byte, that is not useful for the moment.
+//            System.out.println(keyStr);
+//        }
 
         return Utils.toPrimitives(encoded);
     }

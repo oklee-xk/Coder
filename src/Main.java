@@ -6,8 +6,12 @@ public class Main {
             System.out.println("data: " + encode.getData().length);
             System.out.println("encoded: " + (encode.getDictionary().length + encode.getEncoded().length));
 
-            Decode decode = new Decode(encode.getEncoded(), encode.getDictionary(), group);
-            decode.makeFile("out/" + encode.getFileName());
+//            Decode decode = new Decode(
+//                    encode.getEncoded(),
+//                    encode.getDictionary(),
+//                    group,
+//                    encode.getBites4file());
+//            decode.makeFile("out/" + encode.getFileName());
         }
 
 
