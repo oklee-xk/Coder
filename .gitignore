@@ -35,3 +35,4 @@ gradlew.bat
 in/
 out/
 /in/
+/gradle.properties
